@@ -2,6 +2,7 @@ from django import forms
 from .models import CustomUser, Registration, Submission
 from django import forms
 from portal.models import CustomUser
+from django.contrib.auth.hashers import make_password
 
 class StudentRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -19,6 +20,14 @@ class StudentRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match.")
         return cleaned_data
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.password = make_password(self.cleaned_data["password"])  # Hash the password
+        if commit:
+            user.save()
+        return user
+
+
 class TeacherRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
@@ -34,6 +43,15 @@ class TeacherRegistrationForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match.")
         return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.password = make_password(self.cleaned_data["password"])  # Hash the password
+        if commit:
+            user.save()
+        return user
+
+
 
 
 class RegistrationForm(forms.ModelForm):
